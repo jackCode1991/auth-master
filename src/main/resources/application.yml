@@ -7,6 +7,10 @@ spring :
     platform: mysql
     schema: classpath:/schema.sql
     initialization-mode: embedded
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    #password: 123456
 mybatis :
   config-location : classpath:/mybatis-config.xml
 # JWT
@@ -16,3 +20,14 @@ jwt:
   #token有效期一天
   expiration: 86400
   tokenHead: "Bearer "
+
+#微信相关参数
+weChat:
+  #小程序appid
+  appid: wxb0b585c978fb4a45
+  #小程序密钥
+  secret: e424ce0b331275e95cbe611585444a47
+#自定义参数，可以迁移走
+token:
+  #redis默认过期时间（2小时）(这是自定义的)(毫秒)
+  expirationMilliSeconds: 7200000

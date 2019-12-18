@@ -8,6 +8,8 @@ import com.example.auth.demo.domain.auth.UserDetail;
 import com.example.auth.demo.exception.CustomException;
 import com.example.auth.demo.mapper.AuthMapper;
 import com.example.auth.demo.utils.JwtUtils;
+import com.example.auth.demo.utils.RedisUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,12 +18,16 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author: JoeTao
@@ -36,6 +42,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Value("${jwt.tokenHead}")
     private String tokenHead;
+    
+    @Value("${weChat.appid}")
+    private String appid;
+
+    @Value("${weChat.secret}")
+    private String secret;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Autowired
     public AuthServiceImpl(AuthenticationManager authenticationManager, @Qualifier("CustomUserDetailsService") UserDetailsService userDetailsService, JwtUtils jwtTokenUtil, AuthMapper authMapper) {
@@ -111,4 +126,28 @@ public class AuthServiceImpl implements AuthService {
             throw new CustomException(ResultJson.failure(ResultCode.LOGIN_ERROR, e.getMessage()));
         }
     }
+
+	@Override
+	public ResponseUserToken wxLogin(String code, String username, String password) {
+		//用户验证
+        final Authentication authentication = authenticate(username, password);
+        //存储认证信息
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        //生成token
+        final UserDetail userDetail = (UserDetail) authentication.getPrincipal();
+        Set authoritiesSet = new HashSet();
+        // 模拟从数据库中获取用户权限
+        authoritiesSet.add(new SimpleGrantedAuthority("test:add"));
+        authoritiesSet.add(new SimpleGrantedAuthority("test:list"));
+        authoritiesSet.add(new SimpleGrantedAuthority("ddd:list"));
+        userDetail.setAuthorities(authoritiesSet);
+        HashMap<String,Object> hashMap = new HashMap<>();
+        hashMap.put("id",userDetail.getId());
+        hashMap.put("authorities",authoritiesSet);
+        final String token = jwtTokenUtil.generateAccessToken(userDetail);
+        redisUtil.hset(token,hashMap);
+        //存储token
+        jwtTokenUtil.putToken(username, token);
+		return new ResponseUserToken(token, userDetail);
+	}
 }

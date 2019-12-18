@@ -9,6 +9,7 @@ import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -54,6 +55,17 @@ public class AuthController {
         final ResponseUserToken response = authService.login(user.getName(), user.getPassword());
         return ResultJson.ok(response);
     }
+    
+    @PostMapping(value = "/wxLogin")
+    @ApiOperation(value = "登陆", notes = "登陆成功返回token,测试管理员账号:admin,123456;用户账号：les123,admin")
+    public ResultJson<ResponseUserToken> login(
+    		@RequestBody Map<String, String> request){
+    	String code = request.get("code");
+    	String username = request.get("username");
+    	String password = request.get("password");
+        ResponseUserToken wxLogin = authService.wxLogin(code,username,password);
+        return ResultJson.ok(wxLogin);
+    }
 
     @GetMapping(value = "/logout")
     @ApiOperation(value = "登出", notes = "退出登陆")
@@ -88,6 +100,14 @@ public class AuthController {
         UserDetail userDetail = new UserDetail(user.getName(), user.getPassword(), Role.builder().id(1l).build());
         return ResultJson.ok(authService.register(userDetail));
     }
+    
+    @GetMapping(value = "/user/add")
+    @PreAuthorize("hasAuthority('test:list')")
+    public ResultJson add(HttpServletRequest request) {
+        System.out.println("111");
+        return ResultJson.ok();
+    }
+    
 //    @GetMapping(value = "refresh")
 //    @ApiOperation(value = "刷新token")
 //    public ResultJson refreshAndGetAuthenticationToken(

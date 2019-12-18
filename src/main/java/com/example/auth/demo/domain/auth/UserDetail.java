@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author : JoeTao
@@ -19,7 +20,17 @@ public class UserDetail implements UserDetails {
     private String password;
     private Role role;
     private Date lastPasswordResetDate;
+    private Set<? extends GrantedAuthority> authorities;//权限列表
     
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.authorities;
+    }
+    
+    public UserDetail setAuthorities(Set<? extends GrantedAuthority> authorities) {
+        this.authorities = authorities;
+        return this;
+    }
 
     public UserDetail(
             long id,
@@ -47,12 +58,12 @@ public class UserDetail implements UserDetails {
     }
 
     //返回分配给用户的角色列表
-    @Override
+    /*@Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(role.getName()));
         return authorities;
-    }
+    }*/
 
     public long getId() {
         return id;

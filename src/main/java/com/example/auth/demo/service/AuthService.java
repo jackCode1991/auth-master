@@ -42,4 +42,11 @@ public interface AuthService {
      * @return
      */
     UserDetail getUserByToken(String token);
+    
+    /**
+     * 小程序登录
+     * @param code
+     * @return
+     */
+	ResponseUserToken wxLogin(String code,String username,String password);
 }
