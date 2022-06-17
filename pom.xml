@@ -105,7 +105,7 @@
 		<dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.36</version>
+            <version>1.2.83</version>
         </dependency>
         <!-- 注意导入xfire-all jar包会与spring冲突 -->
         <dependency>
